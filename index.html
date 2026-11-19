@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BMI Calculator · เครื่องคำนวณ BMI</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#1b2733;--muted:#5d6b7a;--border:#d9e1ea;--accent:#1f7a8c;--accent-text:#fff;
+--c0:#3b82f6;--c1:#22a06b;--c2:#e8a317;--c3:#f06d2f;--c4:#d6303a;--c5:#8e1b2c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f161d;--card:#18222c;--text:#e8eef4;--muted:#9aa9b8;--border:#2b3947;--accent:#4fb3c6;--accent-text:#08131a}}
+:root[data-theme="dark"]{--bg:#0f161d;--card:#18222c;--text:#e8eef4;--muted:#9aa9b8;--border:#2b3947;--accent:#4fb3c6;--accent-text:#08131a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans Thai","Sarabun",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+main{max-width:540px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.45rem;margin:8px 0 2px}
+.sub{color:var(--muted);margin:0 0 18px;font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px}
+.f{margin-bottom:14px}
+label,.lab{display:block;font-weight:600;margin:0 0 6px;font-size:.92rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.lh .lab{margin:0}
+input[type=number]{width:100%;padding:11px;font-size:1.05rem;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)}
+input:focus{outline:2px solid var(--accent);border-color:transparent}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.seg.full{display:flex}
+.seg button{flex:1;margin:0;padding:8px 12px;font-size:.88rem;font-weight:600;border:0;border-radius:0;background:transparent;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--accent-text)}
+.go{width:100%;margin-top:6px;padding:13px;font-size:1.05rem;font-weight:700;border:0;border-radius:10px;background:var(--accent);color:var(--accent-text);cursor:pointer}
+.ghost{width:100%;margin-top:8px;padding:10px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:.95rem}
+#result{display:none;text-align:center}
+.bmi{font-size:3rem;font-weight:800;line-height:1.1}
+.cat{display:inline-block;margin-top:6px;padding:4px 14px;border-radius:99px;color:#fff;font-weight:700}
+.en{color:var(--muted);font-size:.9rem;margin-top:4px}
+.bar{position:relative;display:flex;height:14px;border-radius:7px;overflow:hidden;margin:22px 0 6px}
+.bar i{flex:1}
+.pin{position:absolute;top:-5px;width:4px;height:24px;background:var(--text);border-radius:2px;transform:translateX(-2px);transition:left .4s}
+.ticks{position:relative;height:16px;font-size:.72rem;color:var(--muted)}
+.ticks span{position:absolute;transform:translateX(-50%)}
+.info{font-size:.92rem;text-align:left;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.info p{margin:8px 0 0}
+table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:8px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:600}
+tr.on{background:color-mix(in srgb,var(--accent) 16%,transparent);font-weight:700}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.note{color:var(--muted);font-size:.8rem}
+.err{color:var(--c4);font-size:.9rem;margin-top:10px;display:none}
+.warn{background:color-mix(in srgb,var(--c2) 18%,transparent);border-radius:8px;padding:8px 10px;font-size:.88rem;margin-top:10px}
+.scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<main>
+  <h1>เครื่องคำนวณ BMI · BMI Calculator</h1>
+  <p class="sub">เลือกเกณฑ์ไทยหรือ WHO · Choose Thai or WHO standard</p>
+
+  <div class="card">
+    <div class="f"><div class="lab">เกณฑ์ / Standard</div>
+      <div class="seg full" id="std"><button type="button" data-v="thai" class="on">ไทย (เอเชีย-แปซิฟิก)</button><button type="button" data-v="who">WHO (สากล)</button></div></div>
+
+    <div class="row f">
+      <div><div class="lab">เพศ / Gender</div>
+        <div class="seg full" id="sex"><button type="button" data-v="m" class="on">ชาย / Male</button><button type="button" data-v="f">หญิง / Female</button></div></div>
+      <div><label for="age">อายุ / Age (ปี / yrs)</label><input id="age" type="number" inputmode="numeric" min="1" max="120" step="1" placeholder="เช่น 30"></div>
+    </div>
+
+    <div class="f">
+      <div class="lh"><span class="lab">ส่วนสูง / Height</span>
+        <div class="seg" id="hu"><button type="button" data-v="cm" class="on">cm</button><button type="button" data-v="ft">ft + in</button></div></div>
+      <div id="hcmBox"><input id="hcm" type="number" inputmode="decimal" min="1" step="0.1" placeholder="เช่น 165 cm"></div>
+      <div id="hftBox" class="row3" style="display:none">
+        <input id="hft" type="number" inputmode="numeric" min="0" step="1" placeholder="ft (feet)">
+        <input id="hin" type="number" inputmode="decimal" min="0" step="0.1" placeholder="in (inches)"></div>
+    </div>
+
+    <div class="f">
+      <div class="lh"><span class="lab">น้ำหนัก / Weight</span>
+        <div class="seg" id="wu"><button type="button" data-v="kg" class="on">kg</button><button type="button" data-v="lb">lb</button></div></div>
+      <input id="w" type="number" inputmode="decimal" min="1" step="0.1" placeholder="เช่น 65 kg">
+    </div>
+
+    <button class="go" id="calc" type="button">คำนวณ / Calculate</button>
+    <button class="ghost" id="reset" type="button">ล้างค่า / Reset</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div class="card" id="result">
+    <div class="note" id="resStd"></div>
+    <div class="bmi" id="bmiVal">–</div>
+    <span class="cat" id="catTh">–</span>
+    <div class="en" id="catEn"></div>
+    <div id="barWrap">
+      <div class="bar" id="bar"></div>
+      <div class="ticks" id="ticks"></div>
+    </div>
+    <div class="info" id="info"></div>
+  </div>
+
+  <div class="card">
+    <strong id="tblTitle"></strong>
+    <div class="scroll"><table><thead><tr><th>BMI (kg/m²)</th><th>การแปลผล</th><th>Category</th></tr></thead><tbody id="tbody"></tbody></table></div>
+    <p class="note">สูตร: BMI = น้ำหนัก (กก.) ÷ ส่วนสูง (ม.)² · ใช้กับผู้ใหญ่อายุ 18 ปีขึ้นไป ไม่เหมาะกับหญิงตั้งครรภ์ นักกีฬา หรือผู้สูงอายุมาก เกณฑ์ BMI ไม่แยกเพศ ส่วนเพศและอายุใช้ประมาณค่าไขมันในร่างกาย (สูตร Deurenberg) ซึ่งเป็นเพียงค่าประมาณ ไม่ใช่การวินิจฉัย ควรปรึกษาแพทย์</p>
+    <p class="note">Formula: weight (kg) ÷ height (m)². For adults 18+. BMI cut-offs are the same for men and women; gender and age are used only for the estimated body-fat % (Deurenberg formula), an approximation, not a diagnosis.</p>
+  </div>
+</main>
+
+<script>
+const STD={
+ thai:{name:"เกณฑ์ไทย (เอเชีย-แปซิฟิก) · Thai / Asia-Pacific",edges:[15,18.5,23,25,30,40],normal:[18.5,22.9],cats:[
+  {r:"< 18.5",th:"น้ำหนักน้อย / ผอม",en:"Underweight",tip:"ควรเพิ่มน้ำหนักด้วยอาหารครบ 5 หมู่ และออกกำลังกายสร้างกล้ามเนื้อ"},
+  {r:"18.5 – 22.9",th:"ปกติ (สมส่วน)",en:"Normal weight",tip:"รักษาน้ำหนักให้อยู่ในเกณฑ์นี้ด้วยการกินอาหารสมดุลและออกกำลังกายสม่ำเสมอ"},
+  {r:"23 – 24.9",th:"น้ำหนักเกิน (ท้วม)",en:"Overweight",tip:"เริ่มเสี่ยงต่อโรคเรื้อรัง ควรควบคุมอาหารและเพิ่มการออกกำลังกาย"},
+  {r:"25 – 29.9",th:"อ้วนระดับ 1",en:"Obese class I",tip:"เสี่ยงต่อเบาหวาน ความดัน และไขมันในเลือด ควรลดน้ำหนักและปรึกษาแพทย์"},
+  {r:"≥ 30",th:"อ้วนระดับ 2",en:"Obese class II",tip:"เสี่ยงสูงต่อโรคแทรกซ้อน ควรพบแพทย์เพื่อวางแผนลดน้ำหนักอย่างปลอดภัย"}]},
+ who:{name:"เกณฑ์ WHO (สากล) · WHO international",edges:[15,18.5,25,30,35,40,45],normal:[18.5,24.9],cats:[
+  {r:"< 18.5",th:"น้ำหนักน้อย",en:"Underweight",tip:"ควรเพิ่มน้ำหนักด้วยอาหารที่มีประโยชน์ และปรึกษาผู้เชี่ยวชาญหากน้ำหนักลดโดยไม่ทราบสาเหตุ"},
+  {r:"18.5 – 24.9",th:"ปกติ",en:"Normal weight",tip:"รักษาน้ำหนักด้วยอาหารสมดุลและออกกำลังกายสม่ำเสมอ"},
+  {r:"25 – 29.9",th:"น้ำหนักเกิน (ก่อนอ้วน)",en:"Overweight (pre-obese)",tip:"ควรควบคุมอาหารและเพิ่มการออกกำลังกายเพื่อป้องกันโรคเรื้อรัง"},
+  {r:"30 – 34.9",th:"อ้วนระดับ 1",en:"Obese class I",tip:"ควรลดน้ำหนักและปรึกษาแพทย์"},
+  {r:"35 – 39.9",th:"อ้วนระดับ 2",en:"Obese class II",tip:"เสี่ยงสูง ควรพบแพทย์เพื่อวางแผนลดน้ำหนัก"},
+  {r:"≥ 40",th:"อ้วนระดับ 3",en:"Obese class III",tip:"เสี่ยงสูงมาก ควรพบแพทย์โดยเร็วเพื่อประเมินและรักษา"}]}
+};
+const COL=["var(--c0)","var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)"];
+const $=id=>document.getElementById(id);
+const S={std:"thai",sex:"m",hu:"cm",wu:"kg"};
+const r1=n=>Math.round(n*10)/10;
+
+function seg(id,key,after){
+ $(id).querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  const old=S[key]; S[key]=b.dataset.v;
+  $(id).querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+  if(after)after(old);
+ });
+}
+seg("hu","hu",old=>{
+ const cm=old==="cm"?parseFloat($("hcm").value):(parseFloat($("hft").value||0)*12+parseFloat($("hin").value||0))*2.54;
+ $("hcmBox").style.display=S.hu==="cm"?"":"none";
+ $("hftBox").style.display=S.hu==="ft"?"":"none";
+ if(cm>0){
+  if(S.hu==="cm")$("hcm").value=r1(cm);
+  else{const t=cm/2.54;$("hft").value=Math.floor(t/12);$("hin").value=r1(t%12);}
+ }
+});
+seg("wu","wu",old=>{
+ const v=parseFloat($("w").value);
+ if(v>0)$("w").value=r1(old==="kg"?v*2.20462:v/2.20462);
+ $("w").placeholder=S.wu==="kg"?"เช่น 65 kg":"e.g. 143 lb";
+});
+seg("std","std",()=>{drawTable();if($("result").style.display==="block")calc(true);});
+seg("sex","sex");
+
+function drawTable(idx){
+ const s=STD[S.std];
+ $("tblTitle").textContent="เกณฑ์ BMI · "+s.name;
+ $("tbody").innerHTML=s.cats.map((k,i)=>`<tr${i===idx?' class="on"':''}><td><span class="dot" style="background:${COL[i]}"></span>${k.r}</td><td>${k.th}</td><td>${k.en}</td></tr>`).join("");
+}
+function showErr(m){const e=$("err");e.textContent=m;e.style.display="block";$("result").style.display="none";}
+
+function calc(quiet){
+ $("err").style.display="none";
+ const age=parseFloat($("age").value);
+ const hcm=S.hu==="cm"?parseFloat($("hcm").value):(parseFloat($("hft").value||0)*12+parseFloat($("hin").value||0))*2.54;
+ let wkg=parseFloat($("w").value); if(S.wu==="lb")wkg/=2.20462;
+ if(!(age>=1&&age<=120))return showErr("กรุณากรอกอายุ 1–120 ปี · Please enter an age between 1 and 120.");
+ if(!(hcm>=50&&hcm<=250))return showErr("ส่วนสูงต้องอยู่ระหว่าง 50–250 ซม. (ประมาณ 1 ft 8 in – 8 ft 2 in) · Height out of range.");
+ if(!(wkg>=10&&wkg<=500))return showErr("น้ำหนักไม่อยู่ในช่วงที่ถูกต้อง · Weight out of range.");
+ const s=STD[S.std], hm=hcm/100, bmi=wkg/(hm*hm), adult=age>=18, n=s.cats.length, e=s.edges;
+ $("resStd").textContent=s.name;
+ $("bmiVal").textContent=bmi.toFixed(1);
+ const info=[], catEl=$("catTh");
+ if(adult){
+  const b=r1(bmi);
+  let ci=n-1; for(let i=0;i<n-1;i++){ if(b<e[i+1]){ci=i;break;} }
+  const k=s.cats[ci];
+  catEl.style.display="inline-block";catEl.textContent=k.th;catEl.style.background=COL[ci];
+  $("catEn").textContent=k.en;
+  $("bar").innerHTML=s.cats.map((_,i)=>`<i style="background:${COL[i]}"></i>`).join("")+'<div class="pin" id="pin"></div>';
+  $("ticks").innerHTML=e.slice(1,-1).map((v,i)=>`<span style="left:${(i+1)/n*100}%">${v}</span>`).join("");
+  let pos=0;
+  if(bmi>=e[n])pos=100;
+  else if(bmi>e[0])for(let i=0;i<n;i++){ if(bmi<=e[i+1]){pos=(i+(bmi-e[i])/(e[i+1]-e[i]))/n*100;break;} }
+  $("pin").style.left=pos+"%"; $("barWrap").style.display="";
+  const lo=s.normal[0]*hm*hm, hi=s.normal[1]*hm*hm;
+  info.push(`<div>น้ำหนักที่เหมาะสมสำหรับส่วนสูงนี้: <strong>${lo.toFixed(1)} – ${hi.toFixed(1)} กก. (${(lo*2.20462).toFixed(0)} – ${(hi*2.20462).toFixed(0)} lb)</strong><br><span class="note">Healthy weight range for your height</span></div>`);
+  info.push(`<p>${k.tip}</p>`);
+  const bf=1.20*bmi+0.23*age-10.8*(S.sex==="m"?1:0)-5.4;
+  if(bf>0&&bf<70)info.push(`<p>ไขมันในร่างกาย (ประมาณ): <strong>${bf.toFixed(1)}%</strong> <span class="note">· Estimated body fat (${S.sex==="m"?"male":"female"}, age ${age})</span></p>`);
+  if(age>=65)info.push(`<div class="warn">อายุ 65 ปีขึ้นไป: ควรตีความ BMI ร่วมกับแพทย์ เพราะมวลกล้ามเนื้อมีความสำคัญ · For adults 65+, interpret BMI with your doctor.</div>`);
+  drawTable(ci);
+ }else{
+  catEl.style.display="none";$("catEn").textContent="";$("barWrap").style.display="none";
+  info.push(`<div class="warn">อายุต่ำกว่า 18 ปี: เกณฑ์ข้างต้นใช้กับผู้ใหญ่เท่านั้น เด็กและวัยรุ่นต้องดูกราฟการเจริญเติบโตตามอายุและเพศ กรุณาปรึกษาแพทย์ · Adult categories don’t apply under 18; use age- and sex-specific growth charts.</div>`);
+  drawTable();
+ }
+ $("info").innerHTML=info.join("");
+ $("result").style.display="block";
+ if(!quiet)$("result").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+$("calc").onclick=()=>calc();
+document.querySelectorAll("input").forEach(i=>i.addEventListener("keydown",ev=>{if(ev.key==="Enter")calc();}));
+$("reset").onclick=()=>{document.querySelectorAll("input").forEach(i=>i.value="");$("result").style.display="none";$("err").style.display="none";drawTable();};
+drawTable();
+</script>
+</body>
+</html>
